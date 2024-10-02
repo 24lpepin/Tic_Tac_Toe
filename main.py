@@ -9,8 +9,9 @@ import graphics
 pygame.init()
 
 if __name__ == "__main__":
-    BOARD_SIZE = 3
-    gs = game_engine.GameState(BOARD_SIZE)
+    BOARD_SIZE = 6
+    WIN_CONDITION = 3 #number of symbols in a row for a win
+    gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
     graphics = graphics.Graphics(BOARD_SIZE)
 
     graphics.load_images()

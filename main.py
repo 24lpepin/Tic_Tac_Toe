@@ -10,7 +10,7 @@ pygame.init()
 
 if __name__ == "__main__":
     BOARD_SIZE = 6
-    WIN_CONDITION = 3 #number of symbols in a row for a win
+    WIN_CONDITION = 4 #number of symbols in a row for a win
     gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
     graphics = graphics.Graphics(BOARD_SIZE)
 
@@ -39,10 +39,12 @@ if __name__ == "__main__":
                 # key handlers
             elif e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_z:  # undo when 'z' is pressed
-                    pass
+                    gs.undo_move()
+                    game_over = False
+                    result = None
                     
                 if e.key == pygame.K_r:  # resets game when r is pressed
-                    gs = game_engine.GameState(BOARD_SIZE)
+                    gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
                     game_over = False
                     result = None
         

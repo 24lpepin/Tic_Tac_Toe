@@ -6,6 +6,7 @@ class GameState:
     def __init__(self, n=3, win_condition=3):
         self.board_size = n #board size
         self.board = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+        self.move_log = []
         self.turn = 1 #1 => X to move, -1 => O to move
         self.game_over = None
         self.win_condition = win_condition #number of squares in a row needed to win
@@ -14,10 +15,20 @@ class GameState:
         row = int(row)
         col = int(col)
         if self.board[row][col] == 0:
+            self.move_log.append((row,col))
             self.board[row][col] = self.turn
             self.turn *= -1
 
         self.game_over = self.check_game_over(row, col)
+
+    def undo_move(self):
+        if len(self.move_log) != 0:
+            last_move = self.move_log[len(self.move_log)-1]
+            self.board[last_move[0]][last_move[1]] = 0
+            self.turn *= -1
+            self.game_over = None
+            self.move_log.pop()
+
     
     def is_game_over(self):
         return self.game_over
@@ -26,15 +37,17 @@ class GameState:
         player = self.board[row_moved][col_moved]
 
         # Check the row of the last move
-        if self.count_consecutive(self.board[row_moved], self.win_condition):
+        row = self.board[row_moved]
+        if self.count_consecutive(row, self.win_condition):
             return player  
 
         # Check the column of the last move
-        if self.count_consecutive([self.board[row][col_moved] for row in range(self.board_size)], self.win_condition):
+        column = [self.board[row][col_moved] for row in range(self.board_size)]
+        if self.count_consecutive(column, self.win_condition):
             return player  
 
         # Check the main diagonal
-        main_diagonal = [self.board[row_moved][col_moved]]
+        main_diagonal = []
         row_moved_copy = row_moved
         col_moved_copy = col_moved
         while row_moved >= 0 and col_moved >= 0: #move to the top left of diagonal
@@ -50,7 +63,7 @@ class GameState:
         # Check the anti-diagonal
         row_moved = row_moved_copy
         col_moved = col_moved_copy
-        anti_diagonal = [self.board[row_moved][col_moved]]
+        anti_diagonal = []
         while row_moved < self.board_size-1 and col_moved >= 0: #moving to top right of diagonal
             row_moved += 1
             col_moved -= 1

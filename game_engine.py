@@ -29,7 +29,6 @@ class GameState:
             self.game_over = None
             self.move_log.pop()
 
-    
     def is_game_over(self):
         return self.game_over
     
@@ -94,3 +93,12 @@ class GameState:
             else:
                 count = 1 
         return False 
+
+    def get_valid_moves(self):
+        valid_moves = []
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.board[row][col] == 0:
+                    valid_moves.append((row,col))
+
+        return valid_moves

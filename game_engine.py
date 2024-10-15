@@ -63,12 +63,12 @@ class GameState:
         row_moved = row_moved_copy
         col_moved = col_moved_copy
         anti_diagonal = []
-        while row_moved < self.board_size-1 and col_moved >= 0: #moving to top right of diagonal
-            row_moved += 1
-            col_moved -= 1
-        while row_moved >= 0 and col_moved < self.board_size-1: #creating list from top right to bottom left of diagonal
+        while row_moved >= 0 and col_moved <= self.board_size - 1: #moving to top right of diagonal
             row_moved -= 1
             col_moved += 1
+        while row_moved < self.board_size - 1 and col_moved > 0: #creating list from top right to bottom left of diagonal
+            row_moved += 1
+            col_moved -= 1
             anti_diagonal.append(self.board[row_moved][col_moved])
         if self.count_consecutive(anti_diagonal, self.win_condition):
             return player
@@ -102,3 +102,6 @@ class GameState:
                     valid_moves.append((row,col))
 
         return valid_moves
+    
+    def get_board(self):
+        return self.board

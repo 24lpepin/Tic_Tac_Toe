@@ -9,8 +9,14 @@ def find_random_move(gs):
 
 
 def find_move_minimax(gs, depth, turn: Literal[1, -1], max_depth=float('inf')):
-    if gs.is_game_over() is not None or depth >= max_depth:
+    global counter
+    counter += 1
+
+    if gs.is_game_over() is not None:
         return gs.is_game_over()
+    
+    if depth >= max_depth:
+        return 0
 
     valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
 
@@ -32,8 +38,48 @@ def find_move_minimax(gs, depth, turn: Literal[1, -1], max_depth=float('inf')):
             min_score = min(score, min_score)
         return min_score
 
+def find_move_minimax_alpha_beta(gs, depth, turn: Literal[1, -1], alpha, beta, max_depth=float('inf')):
+    global counter
+    counter += 1
+    
+    if counter % 100000 == 0:
+        print(counter)
+    if gs.is_game_over() is not None:
+        return gs.is_game_over()
+    
+    if depth >= max_depth:
+        return 0
+
+    valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
+
+    if turn == 1:  # X to move -> maximizing
+        max_score = -float('inf')
+        for move in valid_moves:
+            gs.make_move(move[0], move[1])
+            score = find_move_minimax_alpha_beta(gs, depth + 1, turn * -1, alpha, beta, max_depth)
+            gs.undo_move()
+            max_score = max(score, max_score)
+            alpha = max(score, alpha)
+            if beta <= alpha:
+                break
+        return max_score
+
+    elif turn == -1:  # O to move -> minimizing
+        min_score = float('inf')
+        for move in valid_moves:
+            gs.make_move(move[0], move[1])
+            score = find_move_minimax_alpha_beta(gs, depth + 1, turn * -1, alpha, beta, max_depth)
+            gs.undo_move()
+            min_score = min(score, min_score)
+            beta = min(score, beta)
+            if beta <= alpha:
+                break
+        return min_score
+    
 
 def find_best_move(gs, max_depth=float('inf')):
+    global counter
+    counter = 0
 
     valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
     turn = gs.turn
@@ -43,7 +89,7 @@ def find_best_move(gs, max_depth=float('inf')):
         max_score = -float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_minimax(gs, 0, turn * -1, max_depth)
+            score = find_move_minimax_alpha_beta(gs, 0, turn * -1, -float('inf'), float('inf'), max_depth)
             gs.undo_move()
             if score > max_score:
                 max_score = score
@@ -54,7 +100,7 @@ def find_best_move(gs, max_depth=float('inf')):
         min_score = float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_minimax(gs, 0, turn * -1, max_depth)
+            score = find_move_minimax_alpha_beta(gs, 0, turn * -1, -float('inf'), float('inf'), max_depth)
             gs.undo_move()
             if score < min_score:
                 min_score = score
@@ -62,4 +108,5 @@ def find_best_move(gs, max_depth=float('inf')):
             elif score == min_score:
                 list_of_moves.append(move)
     
+    print(list_of_moves, counter)
     return list_of_moves

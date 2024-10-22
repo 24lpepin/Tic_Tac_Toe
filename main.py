@@ -13,8 +13,8 @@ import random
 pygame.init()
 
 if __name__ == "__main__":
-    BOARD_SIZE = 3 
-    WIN_CONDITION = 3 #number of symbols in a row for a win
+    BOARD_SIZE = 4
+    WIN_CONDITION = 4 #number of symbols in a row for a win
     gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
     graphics = graphics.Graphics(BOARD_SIZE)
 
@@ -26,10 +26,11 @@ if __name__ == "__main__":
     move_finder_process = None
     move_undone = False
 
-    player_x = True  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
+    player_x = False  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
     player_o = False  # Same as above but for O
     player_x_score = 0
     player_o_score = 0
+    MAX_DEPTH = 8
 
     while running:
         is_human_turn = (gs.turn == 1 and player_x) or (gs.turn == -1 and player_o)
@@ -58,7 +59,7 @@ if __name__ == "__main__":
                     valid_moves = None
 
         if not game_over and not is_human_turn and valid_moves:
-            ai_moves = move_finder.find_best_move(gs)
+            ai_moves = move_finder.find_best_move(gs, MAX_DEPTH)
             if not ai_moves:
                 ai_move = move_finder.find_random_move(gs)
             else:

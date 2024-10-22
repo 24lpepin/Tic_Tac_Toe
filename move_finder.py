@@ -42,8 +42,6 @@ def find_move_minimax_alpha_beta(gs, depth, turn: Literal[1, -1], alpha, beta, m
     global counter
     counter += 1
     
-    if counter % 100000 == 0:
-        print(counter)
     if gs.is_game_over() is not None:
         return gs.is_game_over()
     
@@ -76,6 +74,70 @@ def find_move_minimax_alpha_beta(gs, depth, turn: Literal[1, -1], alpha, beta, m
                 break
         return min_score
     
+def find_move_minimax_move_ordering(gs, depth, turn: Literal[1, -1], alpha, beta, max_depth=float('inf')):
+    global counter
+    counter += 1
+
+    if counter % 500000 == 0:
+        print(counter)
+    
+    if gs.is_game_over() is not None:
+        return gs.is_game_over()
+    
+    if depth >= max_depth:
+        return gs.score_board()
+
+    valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
+    valid_moves = order_moves(gs, valid_moves, turn) #orders the moves so that the best moves are at the beginning of the list
+
+    if turn == 1:  # X to move -> maximizing
+        max_score = -float('inf')
+        for move in valid_moves:
+            gs.make_move(move[0], move[1])
+            score = find_move_minimax_move_ordering(gs, depth + 1, turn * -1, alpha, beta, max_depth)
+            gs.undo_move()
+            max_score = max(score, max_score)
+            alpha = max(score, alpha)
+            if beta <= alpha:
+                break
+        return max_score
+
+    elif turn == -1:  # O to move -> minimizing
+        min_score = float('inf')
+        for move in valid_moves:
+            gs.make_move(move[0], move[1])
+            score = find_move_minimax_move_ordering(gs, depth + 1, turn * -1, alpha, beta, max_depth)
+            gs.undo_move()
+            min_score = min(score, min_score)
+            beta = min(score, beta)
+            if beta <= alpha:
+                break
+        return min_score
+
+def order_moves(gs, valid_moves, turn):
+    move_scores = []
+
+    for move in valid_moves:
+        gs.make_move(move[0], move[1])
+        if gs.is_game_over():
+            score = turn * 100
+        #elif gs.is_blocking_move():
+        #    score = turn * 90
+        else:
+            score = gs.update_score(move) #Updates the score based on the last move
+        move_scores.append((move, score))
+        gs.undo_move()
+    
+    if turn == 1:
+        move_scores.sort(reverse=True)
+    elif turn == -1:
+        move_scores.sort()
+    
+    moves = []
+    for move, score in move_scores:
+        moves.append(move)
+    return moves
+        
 
 def find_best_move(gs, max_depth=float('inf')):
     global counter
@@ -89,7 +151,7 @@ def find_best_move(gs, max_depth=float('inf')):
         max_score = -float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_minimax_alpha_beta(gs, 0, turn * -1, -float('inf'), float('inf'), max_depth)
+            score = find_move_minimax_move_ordering(gs, 0, turn * -1, -float('inf'), float('inf'), max_depth)
             gs.undo_move()
             if score > max_score:
                 max_score = score
@@ -100,7 +162,7 @@ def find_best_move(gs, max_depth=float('inf')):
         min_score = float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_minimax_alpha_beta(gs, 0, turn * -1, -float('inf'), float('inf'), max_depth)
+            score = find_move_minimax_move_ordering(gs, 0, turn * -1, -float('inf'), float('inf'), max_depth)
             gs.undo_move()
             if score < min_score:
                 min_score = score

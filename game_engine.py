@@ -10,6 +10,7 @@ class GameState:
         self.turn = 1 #1 => X to move, -1 => O to move
         self.game_over = None
         self.win_condition = win_condition #number of squares in a row needed to win
+        self.score = 0
     
     def make_move(self, row, col):
         row = int(row)
@@ -105,3 +106,47 @@ class GameState:
     
     def get_board(self):
         return self.board
+    
+    def score_board(self):
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.board[row][col] != 0:  # Only score for non-empty squares
+                    self.score += self.board[row][col] * self.get_adjacent_open_squares(row, col)
+        
+        return self.score
+    
+    def update_score(self, move):
+        self.score += self.board[move[0]][move[1]] * self.get_adjacent_open_squares(move[0], move[1])
+        
+        return self.score
+
+    def get_adjacent_open_squares(self, row, col):
+        adj_open_sq = 0
+
+        # Check above
+        if row > 0 and self.board[row-1][col] == 0:
+            adj_open_sq += 1
+        # Check below
+        if row < len(self.board) - 1 and self.board[row+1][col] == 0:
+            adj_open_sq += 1
+        # Check left
+        if col > 0 and self.board[row][col-1] == 0:
+            adj_open_sq += 1
+        # Check right
+        if col < len(self.board[0]) - 1 and self.board[row][col+1] == 0:
+            adj_open_sq += 1
+
+        # Check top-left diagonal
+        if row > 0 and col > 0 and self.board[row-1][col-1] == 0:
+            adj_open_sq += 1
+        # Check top-right diagonal
+        if row > 0 and col < len(self.board[0]) - 1 and self.board[row-1][col+1] == 0:
+            adj_open_sq += 1
+        # Check bottom-left diagonal
+        if row < len(self.board) - 1 and col > 0 and self.board[row+1][col-1] == 0:
+            adj_open_sq += 1
+        # Check bottom-right diagonal
+        if row < len(self.board) - 1 and col < len(self.board[0]) - 1 and self.board[row+1][col+1] == 0:
+            adj_open_sq += 1
+
+        return adj_open_sq

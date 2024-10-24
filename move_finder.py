@@ -78,7 +78,7 @@ def find_move_minimax_move_ordering(gs, depth, turn: Literal[1, -1], alpha, beta
     global counter
     counter += 1
 
-    if counter % 500000 == 0:
+    if counter % 100000 == 0:
         print(counter)
     
     if gs.is_game_over() is not None:
@@ -119,19 +119,11 @@ def order_moves(gs, valid_moves, turn):
 
     for move in valid_moves:
         gs.make_move(move[0], move[1])
-        if gs.is_game_over():
-            score = turn * 100
-        #elif gs.is_blocking_move():
-        #    score = turn * 90
-        else:
-            score = gs.update_score(move) #Updates the score based on the last move
+        score = turn * gs.score_move(move) #Updates the score based on the last move
         move_scores.append((move, score))
         gs.undo_move()
     
-    if turn == 1:
-        move_scores.sort(reverse=True)
-    elif turn == -1:
-        move_scores.sort()
+    move_scores.sort(key=lambda x: x[1], reverse=(turn == 1)) #do i need to reverse this? the numbers are negative when turn is O
     
     moves = []
     for move, score in move_scores:
@@ -158,6 +150,7 @@ def find_best_move(gs, max_depth=float('inf')):
                 list_of_moves = [move]
             elif score == max_score:
                 list_of_moves.append(move)
+
     elif turn == -1:  # O to move -> minimizing
         min_score = float('inf')
         for move in valid_moves:

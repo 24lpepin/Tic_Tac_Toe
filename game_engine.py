@@ -107,46 +107,62 @@ class GameState:
     def get_board(self):
         return self.board
     
-    def score_board(self):
-        for row in range(len(self.board)):
-            for col in range(len(self.board[row])):
-                if self.board[row][col] != 0:  # Only score for non-empty squares
-                    self.score += self.board[row][col] * self.get_adjacent_open_squares(row, col)
-        
+    def score_board(self): #TODO     
         return self.score
     
-    def update_score(self, move):
-        self.score += self.board[move[0]][move[1]] * self.get_adjacent_open_squares(move[0], move[1])
+    def score_move(self, move):
+        score = 0
+        #1) winning move
+        if self.check_game_over(move[0], move[1]):
+            return 10000
         
-        return self.score
+        #2) blocking move
+        if self.is_blocking_move(move):
+            score += 90
+        
+        #3) location (central vs diagonals vs edges)
+        score += self.evaluate_centrality(move)
 
-    def get_adjacent_open_squares(self, row, col):
-        adj_open_sq = 0
+        #4) winning chances (# in a row currently)
 
-        # Check above
-        if row > 0 and self.board[row-1][col] == 0:
-            adj_open_sq += 1
-        # Check below
-        if row < len(self.board) - 1 and self.board[row+1][col] == 0:
-            adj_open_sq += 1
-        # Check left
-        if col > 0 and self.board[row][col-1] == 0:
-            adj_open_sq += 1
-        # Check right
-        if col < len(self.board[0]) - 1 and self.board[row][col+1] == 0:
-            adj_open_sq += 1
+        #5) threats
 
-        # Check top-left diagonal
-        if row > 0 and col > 0 and self.board[row-1][col-1] == 0:
-            adj_open_sq += 1
-        # Check top-right diagonal
-        if row > 0 and col < len(self.board[0]) - 1 and self.board[row-1][col+1] == 0:
-            adj_open_sq += 1
-        # Check bottom-left diagonal
-        if row < len(self.board) - 1 and col > 0 and self.board[row+1][col-1] == 0:
-            adj_open_sq += 1
-        # Check bottom-right diagonal
-        if row < len(self.board) - 1 and col < len(self.board[0]) - 1 and self.board[row+1][col+1] == 0:
-            adj_open_sq += 1
+        return score
+    
+    def evaluate_centrality(self, move):
+        row, col = move
+        score = 0
 
-        return adj_open_sq
+        center_row = len(self.board) // 2
+        center_col = len(self.board[0]) // 2
+        distance_to_center = abs(row - center_row) + abs(col - center_col)
+
+        board_size = len(self.board) * len(self.board[0])
+    
+        
+        if board_size <= 16:  
+            central_importance = 75  
+        elif board_size <= 36:  
+            central_importance = 50
+        else:
+            central_importance = 30  
+
+        score += (len(self.board) + len(self.board[0]) - distance_to_center) * central_importance / (board_size/2)
+        return score
+
+
+
+    def is_blocking_move(self, move):
+        row, col = move
+        opponent_turn = -self.turn  # Opponent's turn is the opposite of current turn (if self.turn is 1, opponent is -1)
+
+        # Temporarily make the opponent's move in the given position
+        self.board[row][col] = opponent_turn
+
+        # Check if this move would have resulted in a win for the opponent
+        if self.check_game_over(row, col) == opponent_turn:  
+            # Undo the opponent's move
+            return True  # It's a blocking move
+
+        # Undo the opponent's move if it's not a winning move
+        return False

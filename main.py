@@ -13,8 +13,8 @@ import random
 pygame.init()
 
 if __name__ == "__main__":
-    BOARD_SIZE = 3
-    WIN_CONDITION = 3 #number of symbols in a row for a win
+    BOARD_SIZE = 5
+    WIN_CONDITION = 4 #number of symbols in a row for a win
     gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
     graphics = graphics.Graphics(BOARD_SIZE)
 
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     move_finder_process = None
     move_undone = False
 
-    player_x = False  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
+    player_x = True  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
     player_o = False  # Same as above but for O
     player_x_score = 0
     player_o_score = 0
@@ -65,7 +65,7 @@ if __name__ == "__main__":
             else:
                 ai_move = ai_moves[random.randint(0, len(ai_moves) - 1)]
             gs.make_move(ai_move[0], ai_move[1])
-            time.sleep(0.4)
+            time.sleep(1)
 
         graphics.draw_game_state(gs.board)
         result = gs.is_game_over()

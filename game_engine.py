@@ -126,7 +126,6 @@ class GameState:
         #4) winning chances (# in a row currently)
 
         #5) threats
-
         return score
     
     def evaluate_centrality(self, move):
@@ -166,3 +165,10 @@ class GameState:
 
         # Undo the opponent's move if it's not a winning move
         return False
+    
+    def print_board(self):
+        for row in self.board:
+            r = ""
+            for col in row:
+                r += f"{col}, "
+            print(r)

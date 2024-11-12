@@ -8,19 +8,20 @@ def find_random_move(gs):
     return valid_moves[random.randint(0, len(valid_moves) - 1)]
     
 def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, memo, max_depth=float('inf')):
-    global counter, move_score_log
+    global counter
     counter += 1
 
     if counter % 100000 == 0:
         print(counter)
 
-    key = gs_to_key(gs, turn)
-    if key in memo:
-        print("return", key, memo[key], depth)
-        return memo[key]
+    key = gs_to_key(gs, turn, depth)
+    """if key in memo:
+        return memo[key]"""
     
-    if gs.is_game_over() is not None:
-        return gs.is_game_over()
+    game_over_status = gs.is_game_over()
+    if game_over_status is not None:
+        memo[key] = game_over_status
+        return game_over_status
     
     if depth >= max_depth:
         return gs.score_board()
@@ -38,7 +39,6 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
             alpha = max(score, alpha)
             if beta <= alpha:
                 break
-        print(key, max_score, depth)
         memo[key] = max_score
         return max_score
 
@@ -52,7 +52,6 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
             beta = min(score, beta)
             if beta <= alpha:
                 break
-        print(key, min_score, depth)
         memo[key] = min_score
         return min_score
 
@@ -65,20 +64,20 @@ def order_moves(gs, valid_moves, turn):
         move_scores.append((move, score))
         gs.undo_move()
     
-    move_scores.sort(key=lambda x: x[1], reverse=(turn == 1)) 
+    move_scores.sort(key=lambda x: x[1], reverse=(turn == 1)) #do i need to reverse this? the numbers are negative when turn is O
     
     moves = []
     for move, score in move_scores:
         moves.append(move)
     return moves
 
-def gs_to_key(gs, turn):
+def gs_to_key(gs, turn, depth):
     board = gs.get_board()
     key = ""
     for row in board:
         for col in row:
-            key += str(col)
-    key += " "
+            key += f"{col} {depth}"
+        key += " "
     key += str(turn)
     
     return key
@@ -112,15 +111,17 @@ def find_best_move(gs, max_depth=float('inf')):
     elif turn == -1:  # O to move -> minimizing
         min_score = float('inf')
         for move in valid_moves:
-            print("-1", move)
             gs.make_move(move[0], move[1])
             score = find_move_minimax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
+            print("-1", move, score)
             gs.undo_move()
             if score < min_score:
+                print(f"updating score {min_score} -> {score} for {move}")
                 min_score = score
                 list_of_moves = [move]
                 move_score_log = [(move, score)]
             elif score == min_score:
+                print(f"adding to list {min_score} -> {score} for {move}")
                 list_of_moves.append(move)
                 move_score_log.append((move, score))
 

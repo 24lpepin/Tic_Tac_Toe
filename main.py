@@ -13,7 +13,7 @@ import random
 pygame.init()
 
 if __name__ == "__main__":
-    BOARD_SIZE = 6
+    BOARD_SIZE = 5
     WIN_CONDITION = 4 #number of symbols in a row for a win
     gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
     graphics = graphics.Graphics(BOARD_SIZE)

@@ -11,10 +11,11 @@ class GameState:
         self.game_over = None
         self.win_condition = win_condition #number of squares in a row needed to win
         self.score = 0
-        self.centrality_scores = self.compute_centrality_scores()
+        self.centrality_scores = self.centrality_scores = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+        self.compute_centrality_scores()
     
     def compute_centrality_scores(self):
-        self.centrality_scores = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+
         center_row = len(self.board) // 2
         center_col = len(self.board[0]) // 2
         board_size = len(self.board) * len(self.board[0])
@@ -129,10 +130,14 @@ class GameState:
     def get_board(self):
         return self.board
     
-    def score_board(self): #TODO     
-        return self.score
+    def score_board(self):
+        score = self.score_move(None)
+        return score
     
     def score_move(self, move):
+        if move == None: #score_board() function
+            move = self.move_log[-1]
+
         score = 0
         #1) winning move
         if self.check_game_over(move[0], move[1]):

@@ -11,7 +11,29 @@ class GameState:
         self.game_over = None
         self.win_condition = win_condition #number of squares in a row needed to win
         self.score = 0
+        self.centrality_scores = self.compute_centrality_scores()
     
+    def compute_centrality_scores(self):
+        self.centrality_scores = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+        center_row = len(self.board) // 2
+        center_col = len(self.board[0]) // 2
+        board_size = len(self.board) * len(self.board[0])
+
+        if board_size <= 16:  
+            central_importance = 250  
+        elif board_size <= 36:  
+            central_importance = 150
+        elif board_size <= 64:
+            central_importance = 75
+        else:
+            central_importance = 50 
+
+        for row in range(self.board_size):
+            for col in range(self.board_size):
+                distance_to_center = abs(row - center_row) + abs(col - center_col)
+                score = (2 * self.board_size - distance_to_center) * central_importance / (board_size / 2)
+                self.centrality_scores[row][col] = score
+
     def make_move(self, row, col):
         row = int(row)
         col = int(col)
@@ -118,53 +140,52 @@ class GameState:
         
         #2) blocking move
         if self.is_blocking_move(move):
-            score += 90
+            score += 5000
         
         #3) location (central vs diagonals vs edges)
         score += self.evaluate_centrality(move)
 
         #4) winning chances (# in a row currently)
+        score += 100 * self.max_number_in_a_row(move)
 
         #5) threats
         return score
     
     def evaluate_centrality(self, move):
         row, col = move
-        score = 0
-
-        center_row = len(self.board) // 2
-        center_col = len(self.board[0]) // 2
-        distance_to_center = abs(row - center_row) + abs(col - center_col)
-
-        board_size = len(self.board) * len(self.board[0])
-    
-        
-        if board_size <= 16:  
-            central_importance = 75  
-        elif board_size <= 36:  
-            central_importance = 50
-        else:
-            central_importance = 30  
-
-        score += (len(self.board) + len(self.board[0]) - distance_to_center) * central_importance / (board_size/2)
+        score = self.centrality_scores[row][col]
         return score
 
+    def max_number_in_a_row(self, move):
+        row, col = move
+        symbol = self.turn
 
+        max_in_a_row = max(
+            self.count_in_direction(row, col, 0, 1, symbol),  # Row
+            self.count_in_direction(row, col, 1, 0, symbol),  # Column
+            self.count_in_direction(row, col, 1, 1, symbol),  # Main diagonal
+            self.count_in_direction(row, col, 1, -1, symbol)  # Anti-diagonal
+        )
 
+        return max_in_a_row
+
+    def count_in_direction(self, row, col, d_row, d_col, symbol):
+        count = 0
+        for direction in [-1, 1]:
+            r, c = row, col
+            while 0 <= r < self.board_size and 0 <= c < self.board_size and self.board[r][c] == symbol:
+                count += 1
+                r += d_row * direction
+                c += d_col * direction
+        return count - 1 
+            
     def is_blocking_move(self, move):
         row, col = move
-        opponent_turn = -self.turn  # Opponent's turn is the opposite of current turn (if self.turn is 1, opponent is -1)
-
-        # Temporarily make the opponent's move in the given position
-        self.board[row][col] = opponent_turn
-
-        # Check if this move would have resulted in a win for the opponent
-        if self.check_game_over(row, col) == opponent_turn:  
-            # Undo the opponent's move
-            return True  # It's a blocking move
-
-        # Undo the opponent's move if it's not a winning move
-        return False
+        opponent = -self.turn
+        self.board[row][col] = opponent #what if opponent had made that move?
+        blocking = self.check_game_over(row, col) == opponent
+        self.board[row][col] = self.turn
+        return blocking
     
     def print_board(self):
         for row in self.board:

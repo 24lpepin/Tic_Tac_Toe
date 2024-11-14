@@ -14,9 +14,8 @@ def find_move_negamax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
     if counter % 100000 == 0:
         print(counter)
 
-    key = gs_to_key(gs, turn, depth)
+    key = normalized_board_key(gs, turn)
     if key in memo:
-        print(f"Memo hit for key: {key}")
         return memo[key]
     
     game_over_status = gs.is_game_over()
@@ -45,6 +44,33 @@ def find_move_negamax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
     memo[key] = max_score
     return max_score
 
+def normalized_board_key(gs, turn): #chat gpt
+    board = gs.get_board()
+    
+    # Get all rotations and reflections of the board
+    transformations = [
+        board,
+        rotate_board(board),
+        rotate_board(rotate_board(board)),
+        rotate_board(rotate_board(rotate_board(board))),
+        reflect_board(board),
+        reflect_board(rotate_board(board)),
+        reflect_board(rotate_board(rotate_board(board))),
+        reflect_board(rotate_board(rotate_board(rotate_board(board))))
+    ]
+    
+    # Convert each transformation to a string and select the lexicographically smallest one
+    canonical_form = min(''.join(str(col) for row in transformed for col in row) for transformed in transformations)
+    return canonical_form + f"_{turn}"
+
+def rotate_board(board):
+    """Rotate board 90 degrees clockwise."""
+    return [list(row) for row in zip(*board[::-1])]
+
+def reflect_board(board):
+    """Reflect board horizontally."""
+    return [row[::-1] for row in board]
+
 def order_moves(gs, valid_moves, turn):
     move_scores = []
 
@@ -54,12 +80,9 @@ def order_moves(gs, valid_moves, turn):
         move_scores.append((move, score))
         gs.undo_move()
     
-    move_scores.sort(key=lambda x: x[1], reverse=(turn == 1)) #do i need to reverse this? the numbers are negative when turn is O
+    move_scores.sort(key=lambda x: x[1], reverse=(turn == 1)) 
     
-    moves = []
-    for move, score in move_scores:
-        moves.append(move)
-    return moves
+    return [move for move, score in move_scores]
 
 def gs_to_key(gs, turn, depth):
     board = gs.get_board()

@@ -13,8 +13,8 @@ import random
 pygame.init()
 
 if __name__ == "__main__":
-    BOARD_SIZE = 5
-    WIN_CONDITION = 4 #number of symbols in a row for a win
+    BOARD_SIZE = 3
+    WIN_CONDITION = 3 #number of symbols in a row for a win
     gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
     graphics = graphics.Graphics(BOARD_SIZE)
 
@@ -26,11 +26,12 @@ if __name__ == "__main__":
     move_finder_process = None
     move_undone = False
 
-    player_x = True  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
-    player_o = False  # Same as above but for O
-    player_x_score = 0
-    player_o_score = 0
-    MAX_DEPTH = 6
+    player_x = False  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
+    player_o = True  # Same as above but for O
+    player_x_wins = 0
+    player_o_wins = 0
+    draws = 0
+    MAX_DEPTH = 10
 
     while running:
         is_human_turn = (gs.turn == 1 and player_x) or (gs.turn == -1 and player_o)
@@ -72,21 +73,21 @@ if __name__ == "__main__":
         if result != None:
             if result == 1:
                 text = "X wins"
-                player_x_score += 1
+                player_x_wins += 1
             elif result == -1:
                 text = "O wins"
-                player_o_score += 1
+                player_o_wins += 1
             elif result == 0:
                 text = "Tie"
-                player_x_score += 0.5
-                player_o_score += 0.5
+                draws += 1
 
             graphics.draw_end_text(text)
             game_over = True
 
             #reset game as soon as it ends. this is used to test how the ai performs against itself.
-            """print(f"x: {player_x_score}")
-            print(f"o: {player_o_score} \n")
+            """print(f"x: {player_x_wins}")
+            print(f"o: {player_o_wins} \n")
+            print(f"draws: {draws}")
             gs = game_engine.GameState(BOARD_SIZE, WIN_CONDITION)
             game_over = False
             result = None"""

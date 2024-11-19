@@ -7,21 +7,21 @@ def find_random_move(gs):
         return None  # Return None if no valid moves are available
     return valid_moves[random.randint(0, len(valid_moves) - 1)]
     
-def find_move_negamax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, memo, max_depth=float('inf')):
+def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, memo, max_depth=float('inf')):
     global counter
     counter += 1
 
     if counter % 100000 == 0:
         print(counter)
 
-    key = normalized_board_key(gs, turn)
-    if key in memo:
-        return memo[key]
+    key = gs_to_key(gs, turn, depth)
+    """if key in memo:
+        return memo[key]"""
     
     game_over_status = gs.is_game_over()
     if game_over_status is not None:
-        memo[key] = turn * game_over_status
-        return turn * game_over_status
+        memo[key] = game_over_status
+        return game_over_status
     
     if depth >= max_depth:
         return gs.score_board()
@@ -29,20 +29,32 @@ def find_move_negamax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
     valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
     valid_moves = order_moves(gs, valid_moves, turn) #orders the moves so that the best moves are at the beginning of the list
 
-    max_score = -float('inf')
-    
-    for move in valid_moves:
-        gs.make_move(move[0], move[1])
-        score = -find_move_negamax_memoization(gs, depth + 1, -turn, -beta, -alpha, memo, max_depth)
-        gs.undo_move()
-        
-        max_score = max(max_score, score)
-        alpha = max(alpha, score)
+    if turn == 1:  # X to move -> maximizing
+        max_score = -float('inf')
+        for move in valid_moves:
+            gs.make_move(move[0], move[1])
+            score = find_move_minimax_memoization(gs, depth + 1, turn * -1, alpha, beta, memo, max_depth)
+            gs.undo_move()
+            max_score = max(score, max_score)
+            alpha = max(score, alpha)
+            if beta <= alpha:
+                break
+        memo[key] = max_score
+        return max_score
 
-        if alpha >= beta:
-            break
-    memo[key] = max_score
-    return max_score
+    elif turn == -1:  # O to move -> minimizing
+        min_score = float('inf')
+        for move in valid_moves:
+            gs.make_move(move[0], move[1])
+            score = find_move_minimax_memoization(gs, depth + 1, turn * -1, alpha, beta, memo, max_depth)
+            gs.undo_move()
+            min_score = min(score, min_score)
+            beta = min(score, beta)
+            if beta <= alpha:
+                break
+        memo[key] = min_score
+        return min_score
+
 
 def normalized_board_key(gs, turn): #chat gpt
     board = gs.get_board()
@@ -109,10 +121,10 @@ def find_best_move(gs, max_depth=float('inf')):
     if turn == 1:  # X to move -> maximizing
         max_score = -float('inf')
         for move in valid_moves:
-            print("1", move)
             gs.make_move(move[0], move[1])
-            score = find_move_negamax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
+            score = find_move_minimax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
             gs.undo_move()
+            print(f"Move: {move}, Score: {score}")
             if score > max_score:
                 max_score = score
                 list_of_moves = [move]
@@ -125,9 +137,9 @@ def find_best_move(gs, max_depth=float('inf')):
         min_score = float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_negamax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
-            print("-1", move, score)
+            score = find_move_minimax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
             gs.undo_move()
+            print(f"Move: {move}, Score: {score}")
             if score < min_score:
                 print(f"updating score {min_score} -> {score} for {move}")
                 min_score = score

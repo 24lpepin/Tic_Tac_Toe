@@ -1,5 +1,6 @@
 import random
 from typing import Literal
+import math
 
 def find_random_move(gs):
     valid_moves = gs.get_valid_moves()
@@ -15,8 +16,8 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
         print(counter)
 
     key = gs_to_key(gs, turn, depth)
-    """if key in memo:
-        return memo[key]"""
+    if key in memo:
+        return memo[key]
     
     game_over_status = gs.is_game_over()
     if game_over_status is not None:
@@ -28,12 +29,13 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
 
     valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
     valid_moves = order_moves(gs, valid_moves, turn) #orders the moves so that the best moves are at the beginning of the list
+    max_depth = dynamic_depth(valid_moves, gs.get_board_size()[0], gs.get_board_size()[0])
 
     if turn == 1:  # X to move -> maximizing
         max_score = -float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_minimax_memoization(gs, depth + 1, turn * -1, alpha, beta, memo, max_depth)
+            score = find_move_minimax_memoization(gs, depth + 1, -turn, alpha, beta, memo, max_depth)
             gs.undo_move()
             max_score = max(score, max_score)
             alpha = max(score, alpha)
@@ -46,7 +48,7 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
         min_score = float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
-            score = find_move_minimax_memoization(gs, depth + 1, turn * -1, alpha, beta, memo, max_depth)
+            score = find_move_minimax_memoization(gs, depth + 1, -turn, alpha, beta, memo, max_depth)
             gs.undo_move()
             min_score = min(score, min_score)
             beta = min(score, beta)
@@ -108,7 +110,7 @@ def gs_to_key(gs, turn, depth):
     return key
         
 
-def find_best_move(gs, max_depth=float('inf')):
+def find_best_move(gs):
     global counter, move_score_log
     move_score_log = []
     counter = 0
@@ -117,6 +119,7 @@ def find_best_move(gs, max_depth=float('inf')):
     turn = gs.turn
     list_of_moves = []
     memo = {}
+    max_depth = dynamic_depth(valid_moves, gs.get_board_size()[0], gs.get_board_size()[0])
 
     if turn == 1:  # X to move -> maximizing
         max_score = -float('inf')
@@ -154,3 +157,15 @@ def find_best_move(gs, max_depth=float('inf')):
     print("Move scores log:", move_score_log)
     print("Memo size:", len(memo))
     return list_of_moves
+
+def dynamic_depth(valid_moves, board_length, board_width):
+    early_game_size = math.ceil(board_length * board_width / 1.5)
+    mid_game_size = math.ceil(board_length * board_width / 2.5)
+    num_moves = len(valid_moves)
+
+    if num_moves > early_game_size:
+        return 4
+    elif num_moves > mid_game_size:
+        return 6
+    else:
+        return min(num_moves, 10)

@@ -26,12 +26,11 @@ if __name__ == "__main__":
     move_finder_process = None
     move_undone = False
 
-    player_x = False  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
-    player_o = True  # Same as above but for O
+    player_x = True  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
+    player_o = False  # Same as above but for O
     player_x_wins = 0
     player_o_wins = 0
     draws = 0
-    MAX_DEPTH = 10
 
     while running:
         is_human_turn = (gs.turn == 1 and player_x) or (gs.turn == -1 and player_o)
@@ -60,7 +59,7 @@ if __name__ == "__main__":
                     valid_moves = None
 
         if not game_over and not is_human_turn and valid_moves:
-            ai_moves = move_finder.find_best_move(gs, MAX_DEPTH)
+            ai_moves = move_finder.find_best_move(gs)
             if not ai_moves:
                 ai_move = move_finder.find_random_move(gs)
             else:

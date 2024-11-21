@@ -130,6 +130,9 @@ class GameState:
     def get_board(self):
         return self.board
     
+    def get_board_size(self):
+        return (self.board_size, self.board_size)
+    
     def score_board(self):
         score = self.score_move(None)
         return score

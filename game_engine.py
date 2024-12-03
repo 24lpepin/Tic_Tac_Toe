@@ -134,8 +134,62 @@ class GameState:
         return (self.board_size, self.board_size)
     
     def score_board(self):
-        score = self.score_move(None)
-        return score
+        score = 0
+
+        # Evaluate centrality
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                score += self.board[row][col] * self.centrality_scores[row][col]
+
+        #score1 = score
+
+        # Evaluate winning chances
+        score += self.evaluate_winning_chances(1) * 50  # Favor maximizing player (X)
+        score -= self.evaluate_winning_chances(-1) * 50  # Penalize minimizing player (O)
+
+        #print(round(score1,2), round(score, 2))
+
+        return round(score, 2)
+    
+    def evaluate_winning_chances(self, player):
+        winning_chances = 0
+
+        # Check rows
+        for row in self.board:
+            winning_chances += self.count_in_line(row, player)
+
+        # Check columns
+        for col in range(len(self.board[0])):
+            column = [self.board[row][col] for row in range(len(self.board))]
+            winning_chances += self.count_in_line(column, player)
+
+        # Check main diagonal
+        main_diagonal = [self.board[i][i] for i in range(len(self.board))]
+        winning_chances += self.count_in_line(main_diagonal, player)
+
+        # Check anti-diagonal
+        anti_diagonal = [self.board[i][len(self.board) - i - 1] for i in range(len(self.board))]
+        winning_chances += self.count_in_line(anti_diagonal, player)
+
+        return winning_chances
+    
+    def count_in_line(self, line, player):
+        count = 0
+        consecutive = 0
+        for cell in line:
+            if cell == player:
+                consecutive += 1
+            elif cell == 0:  # Empty space
+                if consecutive > 0:
+                    count += 1  # Potential sequence
+                consecutive = 0
+            else:
+                consecutive = 0  # Opponent's piece blocks the sequence
+
+        if consecutive > 0:
+            count += 1  # Add the last sequence if it ends at the edge
+
+        return count
     
     def score_move(self, move):
         if move == None: #score_board() function
@@ -157,7 +211,7 @@ class GameState:
         score += 100 * self.max_number_in_a_row(move)
 
         #5) threats
-        return score
+        return round(score, 2)
     
     def evaluate_centrality(self, move):
         row, col = move

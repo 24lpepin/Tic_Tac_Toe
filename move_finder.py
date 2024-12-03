@@ -21,15 +21,16 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
     
     game_over_status = gs.is_game_over()
     if game_over_status is not None:
-        memo[key] = game_over_status
-        return game_over_status
+        memo[key] = game_over_status * 10000
+        return game_over_status * 10000
     
     if depth >= max_depth:
+        
         return gs.score_board()
 
     valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
     valid_moves = order_moves(gs, valid_moves, turn) #orders the moves so that the best moves are at the beginning of the list
-    max_depth = dynamic_depth(valid_moves, gs.get_board_size()[0], gs.get_board_size()[0])
+    max_depth = dynamic_depth(valid_moves, gs.get_board_size()[0], gs.get_board_size()[1])
 
     if turn == 1:  # X to move -> maximizing
         max_score = -float('inf')
@@ -144,18 +145,19 @@ def find_best_move(gs):
             gs.undo_move()
             print(f"Move: {move}, Score: {score}")
             if score < min_score:
-                print(f"updating score {min_score} -> {score} for {move}")
+                #print(f"updating score {min_score} -> {score} for {move}")
                 min_score = score
                 list_of_moves = [move]
                 move_score_log = [(move, score)]
             elif score == min_score:
-                print(f"adding to list {min_score} -> {score} for {move}")
+                #print(f"adding to list {min_score} -> {score} for {move}")
                 list_of_moves.append(move)
                 move_score_log.append((move, score))
 
     print(f"Counter: {counter}")
     print("Move scores log:", move_score_log)
     print("Memo size:", len(memo))
+    print("Max Depth: ", max_depth)
     return list_of_moves
 
 def dynamic_depth(valid_moves, board_length, board_width):

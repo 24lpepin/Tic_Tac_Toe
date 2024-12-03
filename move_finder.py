@@ -165,9 +165,21 @@ def dynamic_depth(valid_moves, board_length, board_width):
     mid_game_size = math.ceil(board_length * board_width / 2.5)
     num_moves = len(valid_moves)
 
-    if num_moves > early_game_size:
-        return 4
-    elif num_moves > mid_game_size:
-        return 6
+    if math.sqrt(board_length * board_width) <= 3.1: #if the board is small, max depth is 10
+        return 10
+    elif math.sqrt(board_length * board_width) <= 5.1: #medium board size
+        if num_moves > early_game_size:
+            return 5
+        elif num_moves > mid_game_size:
+            return 7
+        else:
+            return 10
     else:
-        return min(num_moves, 10)
+        if num_moves > early_game_size:
+            return 4
+        elif num_moves > mid_game_size:
+            return 6
+        else:
+            return 8
+
+

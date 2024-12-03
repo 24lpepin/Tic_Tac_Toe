@@ -151,52 +151,77 @@ class GameState:
         #score1 = score
 
         # Evaluate winning chances
-        score += self.evaluate_winning_chances(1) * 50  # Favor maximizing player (X)
-        score -= self.evaluate_winning_chances(-1) * 50  # Penalize minimizing player (O)
+        score += self.evaluate_winning_chances() * 50 
 
         #print(round(score1,2), round(score, 2))
 
         return round(score, 2)
     
-    def evaluate_winning_chances(self, player):
+    def evaluate_winning_chances(self):
+        """
+        Checks if it is possible for X or O to win in a given row/column/diagonal
+        """
         winning_chances = 0
 
-        # Check rows
-        for row in self.board:
-            winning_chances += self.count_in_line(row, player)
+        for row_moved in range(len(self.board)): #iterate through each square in the board
+            for col_moved in range(len(self.board[0])):
 
-        # Check columns
-        for col in range(len(self.board[0])):
-            column = [self.board[row][col] for row in range(len(self.board))]
-            winning_chances += self.count_in_line(column, player)
+                player = self.board[row_moved][col_moved]
+                
+                row = self.board[row_moved]
+                # Check the row of the square
+                if self.count_winning_chances(row, player) >= self.win_condition:
+                    winning_chances += 1
 
-        # Check main diagonal
-        main_diagonal = [self.board[i][i] for i in range(len(self.board))]
-        winning_chances += self.count_in_line(main_diagonal, player)
+                # Check the column of the last move
+                col = [self.board[row][col_moved] for row in range(self.board_size)]
+                if self.count_winning_chances(col, player) >= self.win_condition:
+                    winning_chances += 1
 
-        # Check anti-diagonal
-        anti_diagonal = [self.board[i][len(self.board) - i - 1] for i in range(len(self.board))]
-        winning_chances += self.count_in_line(anti_diagonal, player)
+                # Check the main diagonal
+                main_diagonal = []
+                row_moved_copy = row_moved
+                col_moved_copy = col_moved
+                while row_moved >= 0 and col_moved >= 0: #move to the top left of diagonal
+                    row_moved -= 1
+                    col_moved -= 1
+                while row_moved < self.board_size-1 and col_moved < self.board_size-1: #creating list from top left to bottom right of diagonal
+                    row_moved += 1
+                    col_moved += 1
+                    main_diagonal.append(self.board[row_moved][col_moved])
+                if self.count_winning_chances(main_diagonal, player) >= self.win_condition:
+                    winning_chances += 1
+                
+                # Check the anti-diagonal
+                row_moved = row_moved_copy
+                col_moved = col_moved_copy
+                anti_diagonal = []
+                while row_moved >= 0 and col_moved <= self.board_size - 1: #moving to top right of diagonal
+                    row_moved -= 1
+                    col_moved += 1
+                while row_moved < self.board_size - 1 and col_moved > 0: #creating list from top right to bottom left of diagonal
+                    row_moved += 1
+                    col_moved -= 1
+                    anti_diagonal.append(self.board[row_moved][col_moved])
+                if self.count_winning_chances(anti_diagonal, player) >= self.win_condition:
+                    winning_chances += 1
 
         return winning_chances
     
-    def count_in_line(self, line, player):
-        count = 0
+    def count_winning_chances(self, line, player):
+        """
+        Counts the number of squares in a row that are the player or empty
+        """
         consecutive = 0
+        max_consecutive = 0
         for cell in line:
-            if cell == player:
+            if cell == player or cell == 0:
                 consecutive += 1
-            elif cell == 0:  # Empty space
-                if consecutive > 0:
-                    count += 1  # Potential sequence
-                consecutive = 0
             else:
+                max_consecutive = max(max_consecutive, consecutive)
                 consecutive = 0  # Opponent's piece blocks the sequence
 
-        if consecutive > 0:
-            count += 1  # Add the last sequence if it ends at the edge
-
-        return count
+        return consecutive
     
     def score_move(self, move):
         if move == None: #score_board() function

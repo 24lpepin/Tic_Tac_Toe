@@ -13,6 +13,31 @@ class GameState:
         self.score = 0
         self.centrality_scores = self.centrality_scores = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
         self.compute_centrality_scores()
+
+    def print_board(self):
+        for row in self.board:
+            r = ""
+            for col in row:
+                r += f"{col}, "
+            print(r)
+
+    def get_valid_moves(self):
+        valid_moves = []
+        for row in range(len(self.board)):
+            for col in range(len(self.board[row])):
+                if self.board[row][col] == 0:
+                    valid_moves.append((row,col))
+
+        return valid_moves
+    
+    def get_board(self):
+        return self.board
+    
+    def get_board_size(self):
+        return (self.board_size, self.board_size)
+    
+    def is_game_over(self):
+        return self.game_over
     
     def compute_centrality_scores(self):
 
@@ -52,9 +77,6 @@ class GameState:
             self.turn *= -1
             self.game_over = None
             self.move_log.pop()
-
-    def is_game_over(self):
-        return self.game_over
     
     def check_game_over(self, row_moved, col_moved):
         player = self.board[row_moved][col_moved]
@@ -117,21 +139,6 @@ class GameState:
             else:
                 count = 1 
         return False 
-
-    def get_valid_moves(self):
-        valid_moves = []
-        for row in range(len(self.board)):
-            for col in range(len(self.board[row])):
-                if self.board[row][col] == 0:
-                    valid_moves.append((row,col))
-
-        return valid_moves
-    
-    def get_board(self):
-        return self.board
-    
-    def get_board_size(self):
-        return (self.board_size, self.board_size)
     
     def score_board(self):
         score = 0
@@ -249,9 +256,3 @@ class GameState:
         self.board[row][col] = self.turn
         return blocking
     
-    def print_board(self):
-        for row in self.board:
-            r = ""
-            for col in row:
-                r += f"{col}, "
-            print(r)

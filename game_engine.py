@@ -6,6 +6,7 @@ class GameState:
     def __init__(self, n=3, win_condition=3):
         self.board_size = n #board size
         self.board = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+        self.empty_squares = n * n
         self.move_log = []
         self.turn = 1 #1 => X to move, -1 => O to move
         self.game_over = None
@@ -73,6 +74,7 @@ class GameState:
             self.board[row][col] = self.turn
             self.board_score += self.turn * self.score_move((row, col))  # Add the current move's contribution to the board score
             self.board_score_log.append(self.board_score)
+            self.empty_squares -= 1
             
             # Switch turns
             self.turn *= -1
@@ -89,6 +91,7 @@ class GameState:
             # Restore the board and score
             self.board[row][col] = 0
             self.board_score = self.board_score_log.pop()  # Restore the previous score
+            self.empty_squares += 1
 
             # Switch turns back
             self.turn *= -1
@@ -138,7 +141,7 @@ class GameState:
             return player
 
         # Check for a tie condition
-        if all(self.board[row][col] != 0 for row in range(self.board_size) for col in range(self.board_size)):
+        if self.empty_squares == 0:
             return 0  
 
         # Game is not over yet

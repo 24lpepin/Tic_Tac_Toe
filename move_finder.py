@@ -74,7 +74,8 @@ def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, 
         return game_over_status * 10000
     
     if depth >= max_depth:
-        return gs.score_board()
+        #board_score = gs.score_board()
+        return gs.board_score
 
     valid_moves = gs.get_valid_moves()  # Recalculate valid moves after each board change
     valid_moves = order_moves(gs, valid_moves, turn) #orders the moves so that the best moves are at the beginning of the list

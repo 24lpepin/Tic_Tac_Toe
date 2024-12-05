@@ -9,6 +9,7 @@ import move_finder
 from multiprocessing import Process, Queue
 import time
 import random
+import cProfile
 
 pygame.init()
 
@@ -58,7 +59,11 @@ if __name__ == "__main__":
                     result = None
                     valid_moves = None
 
-        if not game_over and not is_human_turn and valid_moves:
+        if not game_over and not is_human_turn and valid_moves: #26.23s, 26.53s vs. 26.52s, 26.13s
+            start_time = time.time()
+            pr = cProfile.Profile()
+            pr.enable()
+            
             ai_moves = move_finder.find_best_move(gs)
             if not ai_moves:
                 ai_move = move_finder.find_random_move(gs)
@@ -66,6 +71,11 @@ if __name__ == "__main__":
                 ai_move = ai_moves[random.randint(0, len(ai_moves) - 1)]
             gs.make_move(ai_move[0], ai_move[1])
             time.sleep(1)
+
+            end_time = time.time()
+            print(f"Time taken: {end_time - start_time:.6f} seconds")
+            pr.disable()
+            pr.print_stats() #78.336s for check_game_over; 38.44s for count_consecutive; 21.348s for count_in_direction; 15.872s for append()
 
         graphics.draw_game_state(gs.board)
         result = gs.is_game_over()

@@ -13,6 +13,8 @@ class GameState:
         self.score = 0
         self.centrality_scores = self.centrality_scores = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
         self.compute_centrality_scores()
+        self.board_score = 0
+        self.board_score_log = [0]
 
     def print_board(self):
         for row in self.board:
@@ -64,19 +66,35 @@ class GameState:
         row = int(row)
         col = int(col)
         if self.board[row][col] == 0:
-            self.move_log.append((row,col))
+            # Log the move
+            self.move_log.append((row, col))
+            
+            # Update the board and score before switching the turn
             self.board[row][col] = self.turn
+            self.board_score += self.turn * self.score_move((row, col))  # Add the current move's contribution to the board score
+            self.board_score_log.append(self.board_score)
+            
+            # Switch turns
             self.turn *= -1
 
-        self.game_over = self.check_game_over(row, col)
+            # Check if the game is over
+            self.game_over = self.check_game_over(row, col)
 
     def undo_move(self):
         if len(self.move_log) != 0:
-            last_move = self.move_log[len(self.move_log)-1]
-            self.board[last_move[0]][last_move[1]] = 0
+            # Undo the last move
+            last_move = self.move_log.pop()
+            row, col = last_move
+
+            # Restore the board and score
+            self.board[row][col] = 0
+            self.board_score = self.board_score_log.pop()  # Restore the previous score
+
+            # Switch turns back
             self.turn *= -1
+
+            # Reset game-over status
             self.game_over = None
-            self.move_log.pop()
     
     def check_game_over(self, row_moved, col_moved):
         player = self.board[row_moved][col_moved]
@@ -104,7 +122,7 @@ class GameState:
             main_diagonal.append(self.board[row_moved][col_moved])
         if self.count_consecutive(main_diagonal, self.win_condition):
             return player
-        
+                
         # Check the anti-diagonal
         row_moved = row_moved_copy
         col_moved = col_moved_copy
@@ -148,12 +166,8 @@ class GameState:
             for col in range(len(self.board[row])):
                 score += self.board[row][col] * self.centrality_scores[row][col]
 
-        #score1 = score
-
         # Evaluate winning chances
         score += self.evaluate_winning_chances() * 50 
-
-        #print(round(score1,2), round(score, 2))
 
         return round(score, 2)
     

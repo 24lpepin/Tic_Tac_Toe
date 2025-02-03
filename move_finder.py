@@ -9,6 +9,30 @@ def find_random_move(gs):
     return valid_moves[random.randint(0, len(valid_moves) - 1)]
 
 def find_best_move(gs):
+    def cut_list(list, turn, percentile = 1): #given a list and percentile, removes all elements that do not fall within the percentile
+        print(f"pre-cut: {list}")
+        new_list = []
+        if turn == -1:
+            list.sort(key=lambda x: x[1])
+            cutoff_number = list[0][1] - turn * percentile * 0.01 * list[0][1]
+            print(f"post-sort: {list}")
+            print(f"cutoff: {cutoff_number}")
+            for i in list:
+                print(i)
+                if i[1] > cutoff_number:
+                    break
+                else:
+                    new_list.append(i)
+        elif turn == 1:
+            list.sort(key=lambda x: x[1], reverse = True)
+            cutoff_number = list[0][1] - turn * percentile * 0.01 * list[0][1]
+            for i in list:
+                if i[1] < cutoff_number:
+                    break
+                else:
+                    new_list.append(i)
+        return new_list
+
     global counter, move_score_log
     move_score_log = []
     counter = 0
@@ -26,31 +50,39 @@ def find_best_move(gs):
             score = find_move_minimax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
             gs.undo_move()
             print(f"Move: {move}, Score: {score}")
-            if score > max_score:
-                max_score = score
-                list_of_moves = [move]
-                move_score_log = [(move, score)]
-            elif score == max_score:
-                list_of_moves.append(move)
-                move_score_log.append((move, score))
+            move_score_log.append((move, score))
+            
+            # if score > max_score:
+            #     max_score = score
+            #     list_of_moves = [move]
+            #     move_score_log = [(move, score)]
+            # elif score == max_score:
+            #     list_of_moves.append(move)
+            #     move_score_log.append((move, score))
 
-    elif turn == -1:  # O to move -> minimizing
+    elif turn == -1:  # O to move -> minimizing            
         min_score = float('inf')
         for move in valid_moves:
             gs.make_move(move[0], move[1])
             score = find_move_minimax_memoization(gs, 0, turn * -1, -float('inf'), float('inf'), memo, max_depth)
             gs.undo_move()
             print(f"Move: {move}, Score: {score}")
-            if score < min_score:
-                #print(f"updating score {min_score} -> {score} for {move}")
-                min_score = score
-                list_of_moves = [move]
-                move_score_log = [(move, score)]
-            elif score == min_score:
-                #print(f"adding to list {min_score} -> {score} for {move}")
-                list_of_moves.append(move)
-                move_score_log.append((move, score))
+            min_score = min(score, min_score)
+            move_score_log.append((move, score))
+            
+            # if score < min_score:
+            #     print(f"updating score {min_score} -> {score} for {move}")
+            #     min_score = score
+            #     list_of_moves = [move]
+            #     move_score_log = [(move, score)]
+            #     print(f"move score log: {move_score_log}")
+            # elif score == min_score:
+            #     print(f"adding to list {min_score} -> {score} for {move}")
+            #     list_of_moves.append(move)
+            #     move_score_log.append((move, score))
+            #     print(f"move score log: {move_score_log}")
 
+    move_score_log = cut_list(move_score_log, turn)
     print(f"Counter: {counter}")
     print("Move scores log:", move_score_log)
     print("Memo size:", len(memo))

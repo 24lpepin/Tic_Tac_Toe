@@ -60,9 +60,9 @@ if __name__ == "__main__":
                     valid_moves = None
 
         if not game_over and not is_human_turn and valid_moves: #26.23s, 26.53s vs. 26.52s, 26.13s
-            start_time = time.time()
-            pr = cProfile.Profile()
-            pr.enable()
+            # start_time = time.time()
+            # pr = cProfile.Profile()
+            # pr.enable()
             
             ai_moves = move_finder.find_best_move(gs)
             if not ai_moves:
@@ -70,12 +70,17 @@ if __name__ == "__main__":
             else:
                 ai_move = ai_moves[random.randint(0, len(ai_moves) - 1)]
             gs.make_move(ai_move[0], ai_move[1])
-            time.sleep(1)
+            time.sleep(.4)
 
-            end_time = time.time()
-            print(f"Time taken: {end_time - start_time:.6f} seconds")
-            pr.disable()
-            pr.print_stats() #78.336s for check_game_over; 38.44s for count_consecutive; 21.348s for count_in_direction; 15.872s for append()
+            # end_time = time.time()
+            # print(f"Time taken: {end_time - start_time:.6f} seconds")
+            # pr.disable()
+            # pr.print_stats() 
+            # #78.336s for check_game_over; 38.44s for count_consecutive; 21.348s for count_in_direction; 15.872s for append()
+            # #41.816s for check_game_over; 28.063s for count_consecutive; 16.027s for count_in_direction; 11.115s for append(); 146.799s total
+            # #35.733s for check_game_over; 23.8s for count_consecutive; 13.715s for count_in_direction; 9.596s for append(); 124.457s total
+            # #36.019s for check_game_over; 24.096s for count_consecutive; 13.809s for count_in_direction; 9.635s for append(); 125.475s total
+            # #---#
 
         graphics.draw_game_state(gs.board)
         result = gs.is_game_over()

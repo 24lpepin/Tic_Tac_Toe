@@ -65,10 +65,12 @@ if __name__ == "__main__":
             # pr.enable()
             
             ai_moves = move_finder.find_best_move(gs)
+            print(f"ai_moves: {ai_moves}")
             if not ai_moves:
                 ai_move = move_finder.find_random_move(gs)
             else:
-                ai_move = ai_moves[random.randint(0, len(ai_moves) - 1)]
+                ai_move = ai_moves[random.randint(0, len(ai_moves) - 1)][0]
+            print(f"ai_move: {ai_move}")
             gs.make_move(ai_move[0], ai_move[1])
             time.sleep(.4)
 

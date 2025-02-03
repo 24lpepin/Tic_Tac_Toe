@@ -9,29 +9,14 @@ def find_random_move(gs):
     return valid_moves[random.randint(0, len(valid_moves) - 1)]
 
 def find_best_move(gs):
-    def cut_list(list, turn, percentile = 1): #given a list and percentile, removes all elements that do not fall within the percentile
-        print(f"pre-cut: {list}")
-        new_list = []
+    def filter_list(list, turn, percentage = 1):
         if turn == -1:
-            list.sort(key=lambda x: x[1])
-            cutoff_number = list[0][1] - turn * percentile * 0.01 * list[0][1]
-            print(f"post-sort: {list}")
-            print(f"cutoff: {cutoff_number}")
-            for i in list:
-                print(i)
-                if i[1] > cutoff_number:
-                    break
-                else:
-                    new_list.append(i)
+            n = min(list, key = lambda x:x[1])[1]
         elif turn == 1:
-            list.sort(key=lambda x: x[1], reverse = True)
-            cutoff_number = list[0][1] - turn * percentile * 0.01 * list[0][1]
-            for i in list:
-                if i[1] < cutoff_number:
-                    break
-                else:
-                    new_list.append(i)
-        return new_list
+            n = max(list, key = lambda x:x[1])[1]
+        cutoff = n + (abs(n) * (percentage / 100))
+        
+        return [i for i in list if (i[1] <= cutoff if turn == -1 else i[1] >= cutoff)]
 
     global counter, move_score_log
     move_score_log = []
@@ -51,7 +36,7 @@ def find_best_move(gs):
             gs.undo_move()
             print(f"Move: {move}, Score: {score}")
             move_score_log.append((move, score))
-            
+
             # if score > max_score:
             #     max_score = score
             #     list_of_moves = [move]
@@ -82,12 +67,13 @@ def find_best_move(gs):
             #     move_score_log.append((move, score))
             #     print(f"move score log: {move_score_log}")
 
-    move_score_log = cut_list(move_score_log, turn)
+    move_score_log = filter_list(move_score_log, turn)
     print(f"Counter: {counter}")
     print("Move scores log:", move_score_log)
     print("Memo size:", len(memo))
     print("Max Depth: ", max_depth)
-    return list_of_moves
+    #return list_of_moves
+    return move_score_log
 
 def find_move_minimax_memoization(gs, depth, turn: Literal[1, -1], alpha, beta, memo, max_depth=float('inf')):
     global counter
@@ -211,5 +197,3 @@ def dynamic_depth(valid_moves, board_length, board_width):
             return 6
         else:
             return 8
-
-

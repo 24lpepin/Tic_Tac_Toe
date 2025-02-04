@@ -27,8 +27,8 @@ if __name__ == "__main__":
     move_finder_process = None
     move_undone = False
 
-    player_x = True  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
-    player_o = False  # Same as above but for O
+    player_x = False  # If a human is playing X, this will be true. If it's an AI playing X, it will be false
+    player_o = True  # Same as above but for O
     player_x_wins = 0
     player_o_wins = 0
     draws = 0

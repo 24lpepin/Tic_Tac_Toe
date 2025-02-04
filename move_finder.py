@@ -10,11 +10,13 @@ def find_random_move(gs):
 
 def find_best_move(gs):
     def filter_list(list, turn, percentage = 1):
+        # print(f"pre-filter: {list}")
         if turn == -1:
             n = min(list, key = lambda x:x[1])[1]
         elif turn == 1:
             n = max(list, key = lambda x:x[1])[1]
-        cutoff = n + (abs(n) * (percentage / 100))
+        cutoff = n + -turn * (abs(n) * (percentage / 100))
+        # print(f"cutoff: {cutoff}")
         
         return [i for i in list if (i[1] <= cutoff if turn == -1 else i[1] >= cutoff)]
 
